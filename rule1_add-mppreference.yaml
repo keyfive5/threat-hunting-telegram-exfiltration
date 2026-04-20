@@ -1,0 +1,43 @@
+title: PowerShell Add-MpPreference Abuse for Defender Exclusion
+id: 01b3b2a1-1234-4def-aaaa-bc1234567890
+status: experimental
+description: Detects PowerShell usage of Add-MpPreference cmdlet to add suspicious Defender exclusions
+author: Muhammad Hasan Zafar
+date: 2025-07-02
+references:
+  - https://learn.microsoft.com/en-us/powershell/module/defender/add-mppreference?view=windowsserver2025-ps
+tags:
+  - attack.defense_evasion
+  - attack.t1562.001
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection_base:
+    Image|endswith: 'powershell.exe'
+    CommandLine|contains: 'Add-MpPreference'
+  selection_path:
+    CommandLine|contains:
+      - 'ExclusionPath'
+      - 'Downloads'
+      - 'Documents'
+      - 'Recycle Bin'
+      - 'AppData\\Roaming'
+      - 'AppData\\Local'
+  selection_process:
+    CommandLine|contains:
+      - 'ExclusionProcess'
+  filter_legit_processes:
+    CommandLine|contains:
+      - 'Veeam'
+      - 'Rapid7'
+      - 'CrowdStrike'
+      - 'SentinelOne'
+  selection_other:
+    CommandLine|contains:
+      - 'ExclusionIP'
+      - 'ExclusionExtension'
+  condition: (selection_base and (selection_path or selection_other or (selection_process and not filter_legit_processes)))
+falsepositives:
+  - Legitimate use of exclusions by trusted IT or security software
+level: high

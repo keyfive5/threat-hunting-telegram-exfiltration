@@ -1,0 +1,31 @@
+title: Attrib Command Used to Hide Script or Interpreter Files
+id: 02b1f1aa-9988-4ad2-a31e-9a7d5e6600b2
+status: experimental
+description: Detects use of the Windows attrib command to hide files with script or interpreter extensions.
+author: Muhammad Hasan Zafar
+date: 2025-07-02
+references:
+  - https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/attrib
+tags:
+  - attack.defense_evasion
+  - attack.t1564.001
+logsource:
+  category: process_creation
+  product: windows
+detection:
+  selection_cmd:
+    Image|endswith: 'attrib.exe'
+    CommandLine|contains:
+      - '+h'
+  selection_ext:
+    CommandLine|contains:
+      - '.js'
+      - '.bat'
+      - '.ps1'
+      - '.py'
+      - '.lua'
+      - '.vbs'
+  condition: all of selection_*
+falsepositives:
+  - Scripts hidden for internal use or automation by sysadmins or installers
+level: medium
